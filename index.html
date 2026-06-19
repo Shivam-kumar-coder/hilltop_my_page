@@ -196,6 +196,7 @@
             <span>Agency Promotion</span>
             <a id="agency-banner-link" href="#" target="_blank" rel="noopener noreferrer">Special Agency Offer</a>
         </div>
+        <div id="agency-ad-slot" class="w-full mt-3"></div>
         <div class="text-[11px] text-slate-500">Get extra earnings on every lead.</div>
     </div>
 
@@ -209,32 +210,26 @@
                 let CONFIG = {
                     redirectUrl: '',
                     adsterraId: '',
+                    agencyAdKey: '',
+                    agencyAdScriptSrc: '',
                     agencyAdUrl: '',
                     agencyAdLabel: 'Special Agency Offer'
                 };
 
-                // Load config from Vercel API endpoint
+                // Load config from API endpoint /api/config, using Vercel env vars when deployed.
                 async function loadConfig() {
                     try {
                         const res = await fetch('/api/config');
                         if (res.ok) {
                             const data = await res.json();
-                            CONFIG.redirectUrl = data.redirectUrl || 'https://example.com/offer';
-                            CONFIG.adsterraId = data.adsterraId || '';
-                            CONFIG.agencyAdUrl = data.agencyAdUrl || '';
-                            CONFIG.agencyAdLabel = data.agencyAdLabel || 'Special Agency Offer';
-
-                            // Inject Adsterra script if ID is provided
-                            if (CONFIG.adsterraId && CONFIG.adsterraId.length > 0) {
-                                injectAdsterra(CONFIG.adsterraId);
-                            }
-
-                            if (CONFIG.agencyAdUrl && CONFIG.agencyAdUrl.length > 0) {
-                                renderAgencyBanner();
-                            }
+                            CONFIG.redirectUrl = data.redirectUrl || CONFIG.redirectUrl;
+                            CONFIG.adsterraId = data.adsterraId || CONFIG.adsterraId;
+                            CONFIG.agencyAdKey = data.agencyAdKey || CONFIG.agencyAdKey;
+                            CONFIG.agencyAdScriptSrc = data.agencyAdScriptSrc || CONFIG.agencyAdScriptSrc;
+                            CONFIG.agencyAdUrl = data.agencyAdUrl || CONFIG.agencyAdUrl;
+                            CONFIG.agencyAdLabel = data.agencyAdLabel || CONFIG.agencyAdLabel;
                         } else {
                             console.warn('Config API returned error, using fallback.');
-                            // Fallback: try to read from window.__ENV (set by server)
                             if (window.__ENV) {
                                 CONFIG = { ...CONFIG, ...window.__ENV };
                             }
@@ -244,6 +239,13 @@
                         if (window.__ENV) {
                             CONFIG = { ...CONFIG, ...window.__ENV };
                         }
+                    }
+
+                    if (CONFIG.adsterraId && CONFIG.adsterraId.length > 0) {
+                        injectAdsterra(CONFIG.adsterraId);
+                    }
+                    if (CONFIG.agencyAdKey || CONFIG.agencyAdUrl) {
+                        renderAgencyBanner();
                     }
                 }
 
@@ -305,10 +307,31 @@
                 function renderAgencyBanner() {
                     const banner = document.getElementById('agency-banner');
                     const link = document.getElementById('agency-banner-link');
-                    if (!banner || !link) return;
+                    const adSlot = document.getElementById('agency-ad-slot');
+                    if (!banner) return;
 
-                    link.href = CONFIG.agencyAdUrl;
-                    link.textContent = CONFIG.agencyAdLabel;
+                    if (link && CONFIG.agencyAdUrl) {
+                        link.href = CONFIG.agencyAdUrl;
+                        link.textContent = CONFIG.agencyAdLabel;
+                        link.classList.remove('hidden');
+                    } else if (link) {
+                        link.classList.add('hidden');
+                    }
+
+                    if (adSlot && CONFIG.agencyAdKey) {
+                        window.atOptions = {
+                            key: CONFIG.agencyAdKey,
+                            format: 'iframe',
+                            height: 60,
+                            width: 468,
+                            params: {}
+                        };
+                        const script = document.createElement('script');
+                        script.src = CONFIG.agencyAdScriptSrc || `https://www.highperformanceformat.com/${CONFIG.agencyAdKey}/invoke.js`;
+                        script.async = true;
+                        adSlot.appendChild(script);
+                    }
+
                     banner.classList.remove('hidden');
                 }
 
