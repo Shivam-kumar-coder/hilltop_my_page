@@ -4,18 +4,16 @@ export default function handler(req, res) {
   }
 
   const redirectUrl = process.env.REDIRECT_URL || '';
-  const adsterraId = process.env.ADSTERA_ID || '';
-  const agencyAdKey = process.env.AGENCY_AD_KEY || '';
-  const agencyAdScriptSrc = process.env.AGENCY_AD_SCRIPT_SRC || '';
-  const agencyAdUrl = process.env.AGENCY_AD_URL || '';
-  const agencyAdLabel = process.env.AGENCY_AD_LABEL || 'Special Agency Offer';
+  const adScriptUrl = process.env.NEXT_PUBLIC_AD_SCRIPT_URL || process.env.AD_SCRIPT_URL || '';
+  const adZoneId = process.env.NEXT_PUBLIC_AD_ZONE_ID || process.env.AD_ZONE_ID || '';
+  const vignetteId = process.env.NEXT_PUBLIC_VIGNETTE_ID || process.env.VIGNETTE_ID || '';
+  const pushId = process.env.NEXT_PUBLIC_PUSH_ID || process.env.PUSH_ID || '';
 
   return res.status(200).json({
     redirectUrl,
-    adsterraId,
-    agencyAdKey,
-    agencyAdScriptSrc,
-    agencyAdUrl,
-    agencyAdLabel
+    adScriptUrl,
+    adZoneId,
+    vignetteId,
+    pushId
   });
 }
