@@ -183,7 +183,8 @@
                 let CONFIG = {
                     redirectUrl: '',
                     adScriptUrl: '',
-                    pushId: ''
+                    inPagePushId: '11189726',
+                    pushNotifyId: '11189728'
                 };
 
                 async function loadConfig() {
@@ -192,8 +193,9 @@
                         if (res.ok) {
                             const data = await res.json();
                             CONFIG.redirectUrl = data.redirectUrl || CONFIG.redirectUrl;
-                            CONFIG.adScriptUrl = data.adScriptUrl || CONFIG.adScriptUrl;
-                            CONFIG.pushId = data.pushId || CONFIG.pushId;
+                            CONFIG.adScriptUrl = data.adScriptUrl || CONFIG.adScriptUrl || 'https://quge5.com/88/tag.min.js';
+                            CONFIG.inPagePushId = data.inPagePushId || CONFIG.inPagePushId;
+                            CONFIG.pushNotifyId = data.pushNotifyId || CONFIG.pushNotifyId;
                         }
                     } catch (error) {
                         console.warn('Unable to load config:', error);
@@ -339,8 +341,15 @@
                         <h4 class="text-2xl font-extrabold text-slate-800 font-display">Ready to apply?</h4>
                         <p class="text-sm text-slate-500 mt-2">Your profile matches a fast loan option. Confirm and continue now.</p>
                     </div>
-                    <div id="push-ad-slot" class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-500 text-sm">
-                        Loading notification ad…
+                    <div class="grid gap-4">
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-500 text-sm">
+                            <div class="font-semibold text-slate-800 mb-2">In-Page Push</div>
+                            <div id="inpage-push-slot">Loading in-page push ad…</div>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-slate-500 text-sm">
+                            <div class="font-semibold text-slate-800 mb-2">Push Notifications</div>
+                            <div id="push-notify-slot">Loading push notification ad…</div>
+                        </div>
                     </div>
                     <button onclick="executeRedirect()" class="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white rounded-2xl font-bold text-center transition-all duration-250 shadow-lg shadow-emerald-200 active:scale-[0.98]">
                         Click to view offer
@@ -416,25 +425,37 @@
                 if (progress >= 100) {
                     clearInterval(interval);
                     goToStep('success');
-                    loadPushAd();
+                    loadPushAds();
                 }
             }, 60);
         }
 
-        function loadPushAd() {
-            const adSlot = document.getElementById('push-ad-slot');
-            if (!adSlot || document.getElementById('push-ad-script')) return;
-            const adScriptUrl = CONFIG.adScriptUrl || 'https://quge5.com/88/tag.min.js';
-            const zoneId = CONFIG.pushId || '11189726';
+        function loadPushAds() {
+            const inpageSlot = document.getElementById('inpage-push-slot');
+            const notifySlot = document.getElementById('push-notify-slot');
+            const scriptUrl = CONFIG.adScriptUrl || 'https://quge5.com/88/tag.min.js';
 
-            adSlot.innerHTML = '';
-            const script = document.createElement('script');
-            script.id = 'push-ad-script';
-            script.src = adScriptUrl;
-            script.async = true;
-            script.setAttribute('data-zone', zoneId);
-            script.setAttribute('data-cfasync', 'false');
-            adSlot.appendChild(script);
+            if (inpageSlot && !document.getElementById('inpage-push-script')) {
+                inpageSlot.innerHTML = '';
+                const script = document.createElement('script');
+                script.id = 'inpage-push-script';
+                script.src = scriptUrl;
+                script.async = true;
+                script.setAttribute('data-zone', CONFIG.inPagePushId || '11189726');
+                script.setAttribute('data-cfasync', 'false');
+                inpageSlot.appendChild(script);
+            }
+
+            if (notifySlot && !document.getElementById('push-notify-script')) {
+                notifySlot.innerHTML = '';
+                const script = document.createElement('script');
+                script.id = 'push-notify-script';
+                script.src = scriptUrl;
+                script.async = true;
+                script.setAttribute('data-zone', CONFIG.pushNotifyId || '11189728');
+                script.setAttribute('data-cfasync', 'false');
+                notifySlot.appendChild(script);
+            }
         }
 
         function executeRedirect() {
