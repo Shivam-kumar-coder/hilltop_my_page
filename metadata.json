@@ -1,0 +1,6 @@
+{
+  "name": "Special Loan Assessor",
+  "description": "An interactive credit eligibility assessor designed to match users with premium and secure personal or home loan options, integrated with Monetag advertising tags.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
