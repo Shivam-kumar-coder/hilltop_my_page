@@ -113,52 +113,46 @@
             }
         }
 
-        /* ----- Adsterra banner placeholder (visible when ID is set) ----- */
-        .ad-container {
-            min-height: 60px;
-            background: rgba(241, 245, 249, 0.6);
-            border-radius: 12px;
+        /* ----- Ad UI blocks ----- */
+        .ad-panel {
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(248, 250, 252, 0.95);
+            border-radius: 1.5rem;
+            padding: 1rem 1rem 0.75rem;
+            box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.25);
+            overflow: hidden;
+        }
+        .ad-panel__label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            color: #64748b;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-weight: 700;
+        }
+        .ad-slot {
+            min-height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
-            color: #94a3b8;
+            background: white;
             border: 1px dashed #cbd5e1;
-            margin-top: 12px;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            margin-top: 0.85rem;
+            color: #64748b;
+            font-size: 0.85rem;
+            text-align: center;
         }
-        .ad-container iframe,
-        .ad-container img {
-            max-width: 100%;
-            border-radius: 8px;
-        }
-
-        .agency-banner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
+        .ad-slot span {
+            display: inline-block;
             width: 100%;
-            background: linear-gradient(90deg, rgba(16,185,129,0.08), rgba(56,189,248,0.08));
-            border: 1px solid rgba(56,189,248,0.2);
-            border-radius: 18px;
-            padding: 12px 16px;
-            margin-top: 14px;
-            box-shadow: 0 12px 30px -18px rgba(14,165,233,0.35);
-            flex-wrap: wrap;
         }
-        .agency-banner a {
-            font-size: 0.92rem;
-            font-weight: 700;
-            color: #0369a1;
-            text-decoration: none;
-        }
-        .agency-banner a:hover {
-            text-decoration: underline;
-        }
-        .agency-banner span {
-            color: #0f172a;
-            font-size: 0.8rem;
-            opacity: 0.8;
+        .ad-slot--hidden {
+            opacity: 0.6;
         }
     </style>
 </head>
@@ -192,103 +186,79 @@
         </div>
     </header>
 
-    <div id="agency-banner" class="agency-banner mx-auto max-w-lg px-4 hidden">
-        <div>
-            <span>Agency Promotion</span>
-            <a id="agency-banner-link" href="#" target="_blank" rel="noopener noreferrer">Special Agency Offer</a>
-        </div>
-        <div id="agency-ad-slot" class="w-full mt-3"></div>
-        <div class="text-[11px] text-slate-500">Get extra benifits on loan</div>
-    </div>
+
 
     <!-- ===== MAIN CONTENT ===== -->
     <main class="w-full max-w-lg mx-auto px-4 py-4 flex-1 flex flex-col justify-center z-10">
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100/80 p-6 md:p-8 relative transition-all duration-300 min-h-[460px] flex flex-col justify-between">
+
+            <div class="ad-panel mb-6">
+                <div class="ad-panel__label">
+                    <span>Featured Loan Banner</span>
+                    <span class="text-slate-400 text-[11px]">Sponsored</span>
+                </div>
+                <div id="ad-slot-main" class="ad-slot ad-slot--hidden">
+                    <span>Loading banner ad...</span>
+                </div>
+            </div>
 
             <!-- ===== CONFIGURATION (fetched from Vercel env) ===== -->
             <script>
                 // ----- CONFIGURATION LOADER -----
                 let CONFIG = {
                     redirectUrl: '',
-                    adsterraId: '',
-                    agencyAdKey: '',
-                    agencyAdScriptSrc: '',
-                    agencyAdUrl: '',
-                    agencyAdLabel: 'Special Agency Offer'
+                    adScriptUrl: '',
+                    adZoneId: '',
+                    vignetteId: '',
+                    pushId: ''
                 };
 
-                // Load config from API endpoint /api/config, using Vercel env vars when deployed.
                 async function loadConfig() {
                     try {
                         const res = await fetch('/api/config');
                         if (res.ok) {
                             const data = await res.json();
                             CONFIG.redirectUrl = data.redirectUrl || CONFIG.redirectUrl;
-                            CONFIG.adsterraId = data.adsterraId || CONFIG.adsterraId;
-                            CONFIG.agencyAdKey = data.agencyAdKey || CONFIG.agencyAdKey;
-                            CONFIG.agencyAdScriptSrc = data.agencyAdScriptSrc || CONFIG.agencyAdScriptSrc;
-                            CONFIG.agencyAdUrl = data.agencyAdUrl || CONFIG.agencyAdUrl;
-                            CONFIG.agencyAdLabel = data.agencyAdLabel || CONFIG.agencyAdLabel;
+                            CONFIG.adScriptUrl = data.adScriptUrl || CONFIG.adScriptUrl;
+                            CONFIG.adZoneId = data.adZoneId || CONFIG.adZoneId;
+                            CONFIG.vignetteId = data.vignetteId || CONFIG.vignetteId;
+                            CONFIG.pushId = data.pushId || CONFIG.pushId;
                         } else {
                             console.warn('Config API returned error, using fallback.');
-                            if (window.__ENV) {
-                                CONFIG = { ...CONFIG, ...window.__ENV };
-                            }
                         }
                     } catch (e) {
                         console.warn('Could not fetch config, using fallback.', e);
-                        if (window.__ENV) {
-                            CONFIG = { ...CONFIG, ...window.__ENV };
-                        }
                     }
 
-                    if (CONFIG.adsterraId && CONFIG.adsterraId.length > 0) {
-                        injectAdsterra(CONFIG.adsterraId);
-                    }
-                    if (CONFIG.agencyAdKey || CONFIG.agencyAdUrl) {
-                        renderAgencyBanner();
-                    }
+                    injectQugeAd();
                 }
 
-                // ----- Adsterra script injection -----
-                function injectAdsterra(adId) {
-                    // Remove any existing ad container
-                    const existing = document.getElementById('adsterra-container');
-                    if (existing) existing.remove();
-
-                    const container = document.createElement('div');
-                    container.id = 'adsterra-container';
-                    container.className = 'ad-container';
-                    container.innerHTML = `
-                            <div style="text-align:center;padding:6px 12px;font-size:10px;color:#94a3b8;">
-                                <span>Sponsored</span>
-                            </div>
-                            <div id="adsterra-ad" style="min-height:50px;display:flex;align-items:center;justify-content:center;width:100%;">
-                                <!-- Adsterra ad will load here -->
-                            </div>
-                        `;
-
-                    // Insert after the main card or inside footer
-                    const mainCard = document.querySelector('.bg-white.rounded-3xl');
-                    if (mainCard) {
-                        mainCard.parentNode.insertBefore(container, mainCard.nextSibling);
-                    } else {
-                        document.querySelector('main').appendChild(container);
-                    }
-
-                    // Load Adsterra script
-                    const script = document.createElement('script');
-                    script.src = `//adsterra.com/ads/${adId}/script.js`;
-                    script.async = true;
-                    script.onload = function() {
-                        console.log('Adsterra loaded successfully.');
-                    };
-                    script.onerror = function() {
-                        console.warn('Adsterra script failed to load.');
-                    };
-                    document.head.appendChild(script);
+                function setAdSlotVisible(slotId) {
+                    const slot = document.getElementById(slotId);
+                    if (!slot) return;
+                    slot.classList.remove('ad-slot--hidden');
+                    slot.innerHTML = '<span>Ad banner loaded. If it does not display, confirm your ad script or zone IDs.</span>';
                 }
 
+                function injectQugeAd() {
+                    if (!CONFIG.adScriptUrl) return;
+
+                    const adSlots = [
+                        { id: CONFIG.adZoneId, slotElement: 'ad-slot-main' },
+                        { id: CONFIG.vignetteId, slotElement: 'ad-slot-vignette' },
+                        { id: CONFIG.pushId, slotElement: 'ad-slot-push' }
+                    ].filter(item => item.id);
+
+                    adSlots.forEach(item => {
+                        const script = document.createElement('script');
+                        script.src = CONFIG.adScriptUrl;
+                        script.async = true;
+                        script.setAttribute('data-zone', item.id);
+                        script.setAttribute('data-cfasync', 'false');
+                        document.head.appendChild(script);
+                        setAdSlotVisible(item.slotElement);
+                    });
+                }
                 // ----- State -----
                 let answers = {
                     age: "",
@@ -305,42 +275,33 @@
                     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
                 }
 
-                function renderAgencyBanner() {
-                    const banner = document.getElementById('agency-banner');
-                    const link = document.getElementById('agency-banner-link');
-                    const adSlot = document.getElementById('agency-ad-slot');
-                    if (!banner) return;
 
-                    if (link && CONFIG.agencyAdUrl) {
-                        link.href = CONFIG.agencyAdUrl;
-                        link.textContent = CONFIG.agencyAdLabel;
-                        link.classList.remove('hidden');
-                    } else if (link) {
-                        link.classList.add('hidden');
-                    }
-
-                    if (adSlot && CONFIG.agencyAdKey) {
-                        window.atOptions = {
-                            key: CONFIG.agencyAdKey,
-                            format: 'iframe',
-                            height: 60,
-                            width: 468,
-                            params: {}
-                        };
-                        const script = document.createElement('script');
-                        script.src = CONFIG.agencyAdScriptSrc || `https://www.highperformanceformat.com/${CONFIG.agencyAdKey}/invoke.js`;
-                        script.async = true;
-                        adSlot.appendChild(script);
-                    }
-
-                    banner.classList.remove('hidden');
-                }
 
                 // ----- Init -----
                 window.addEventListener('DOMContentLoaded', async () => {
                     await loadConfig();
                 });
             </script>
+
+            <div class="ad-panel mb-4 md:mb-6">
+                <div class="ad-panel__label">
+                    <span>Vignette / Interstitial</span>
+                    <span class="text-slate-400 text-[11px]">One-click ad</span>
+                </div>
+                <div id="ad-slot-vignette" class="ad-slot ad-slot--hidden">
+                    <span>Loading vignette ad...</span>
+                </div>
+            </div>
+
+            <div class="ad-panel mb-6">
+                <div class="ad-panel__label">
+                    <span>Push / Popup Ad</span>
+                    <span class="text-slate-400 text-[11px]">Popup zone</span>
+                </div>
+                <div id="ad-slot-push" class="ad-slot ad-slot--hidden">
+                    <span>Loading page push ad...</span>
+                </div>
+            </div>
 
             <!-- ===== STEP 0: INTRO ===== -->
             <section id="step-intro" class="fade-in space-y-6 flex-1 flex flex-col justify-between">
