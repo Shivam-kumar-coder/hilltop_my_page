@@ -113,47 +113,6 @@
             }
         }
 
-        /* ----- Ad UI blocks ----- */
-        .ad-panel {
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            background: rgba(248, 250, 252, 0.95);
-            border-radius: 1.5rem;
-            padding: 1rem 1rem 0.75rem;
-            box-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.25);
-            overflow: hidden;
-        }
-        .ad-panel__label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.75rem;
-            color: #64748b;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            font-weight: 700;
-        }
-        .ad-slot {
-            min-height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border: 1px dashed #cbd5e1;
-            border-radius: 1rem;
-            padding: 0.75rem;
-            margin-top: 0.85rem;
-            color: #64748b;
-            font-size: 0.85rem;
-            text-align: center;
-        }
-        .ad-slot span {
-            display: inline-block;
-            width: 100%;
-        }
-        .ad-slot--hidden {
-            opacity: 0.6;
-        }
     </style>
 </head>
 
@@ -192,26 +151,9 @@
     <main class="w-full max-w-lg mx-auto px-4 py-4 flex-1 flex flex-col justify-center z-10">
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100/80 p-6 md:p-8 relative transition-all duration-300 min-h-[460px] flex flex-col justify-between">
 
-            <div class="ad-panel mb-6">
-                <div class="ad-panel__label">
-                    <span>Featured Loan Banner</span>
-                    <span class="text-slate-400 text-[11px]">Sponsored</span>
-                </div>
-                <div id="ad-slot-main" class="ad-slot ad-slot--hidden">
-                    <span>Loading banner ad...</span>
-                </div>
-            </div>
-
             <!-- ===== CONFIGURATION (fetched from Vercel env) ===== -->
             <script>
-                // ----- CONFIGURATION LOADER -----
-                let CONFIG = {
-                    redirectUrl: '',
-                    adScriptUrl: '',
-                    adZoneId: '',
-                    vignetteId: '',
-                    pushId: ''
-                };
+                let CONFIG = { redirectUrl: '' };
 
                 async function loadConfig() {
                     try {
@@ -219,89 +161,14 @@
                         if (res.ok) {
                             const data = await res.json();
                             CONFIG.redirectUrl = data.redirectUrl || CONFIG.redirectUrl;
-                            CONFIG.adScriptUrl = data.adScriptUrl || CONFIG.adScriptUrl;
-                            CONFIG.adZoneId = data.adZoneId || CONFIG.adZoneId;
-                            CONFIG.vignetteId = data.vignetteId || CONFIG.vignetteId;
-                            CONFIG.pushId = data.pushId || CONFIG.pushId;
-                        } else {
-                            console.warn('Config API returned error, using fallback.');
                         }
-                    } catch (e) {
-                        console.warn('Could not fetch config, using fallback.', e);
+                    } catch (error) {
+                        console.warn('Unable to load config:', error);
                     }
-
-                    injectQugeAd();
                 }
 
-                function setAdSlotVisible(slotId) {
-                    const slot = document.getElementById(slotId);
-                    if (!slot) return;
-                    slot.classList.remove('ad-slot--hidden');
-                    slot.innerHTML = '<span>Ad banner loaded. If it does not display, confirm your ad script or zone IDs.</span>';
-                }
-
-                function injectQugeAd() {
-                    if (!CONFIG.adScriptUrl) return;
-
-                    const adSlots = [
-                        { id: CONFIG.adZoneId, slotElement: 'ad-slot-main' },
-                        { id: CONFIG.vignetteId, slotElement: 'ad-slot-vignette' },
-                        { id: CONFIG.pushId, slotElement: 'ad-slot-push' }
-                    ].filter(item => item.id);
-
-                    adSlots.forEach(item => {
-                        const script = document.createElement('script');
-                        script.src = CONFIG.adScriptUrl;
-                        script.async = true;
-                        script.setAttribute('data-zone', item.id);
-                        script.setAttribute('data-cfasync', 'false');
-                        document.head.appendChild(script);
-                        setAdSlotVisible(item.slotElement);
-                    });
-                }
-                // ----- State -----
-                let answers = {
-                    age: "",
-                    income: "",
-                    creditScore: ""
-                };
-
-
-                // ----- Helper: URL params -----
-                function getUrlParameter(name) {
-                    name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
-                    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-                    const results = regex.exec(location.search);
-                    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-                }
-
-
-
-                // ----- Init -----
-                window.addEventListener('DOMContentLoaded', async () => {
-                    await loadConfig();
-                });
+                window.addEventListener('DOMContentLoaded', loadConfig);
             </script>
-
-            <div class="ad-panel mb-4 md:mb-6">
-                <div class="ad-panel__label">
-                    <span>Vignette / Interstitial</span>
-                    <span class="text-slate-400 text-[11px]">One-click ad</span>
-                </div>
-                <div id="ad-slot-vignette" class="ad-slot ad-slot--hidden">
-                    <span>Loading vignette ad...</span>
-                </div>
-            </div>
-
-            <div class="ad-panel mb-6">
-                <div class="ad-panel__label">
-                    <span>Push / Popup Ad</span>
-                    <span class="text-slate-400 text-[11px]">Popup zone</span>
-                </div>
-                <div id="ad-slot-push" class="ad-slot ad-slot--hidden">
-                    <span>Loading page push ad...</span>
-                </div>
-            </div>
 
             <!-- ===== STEP 0: INTRO ===== -->
             <section id="step-intro" class="fade-in space-y-6 flex-1 flex flex-col justify-between">
@@ -310,15 +177,14 @@
                         🔒 100% Secure Results
                     </div>
                     <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight leading-snug font-display">
-                        Find the <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600">best Personal or Home Loan</span> options for your profile.
+                        Find the <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600">best loan offer</span> in just 2 steps.
                     </h2>
                     <p class="text-[14px] text-slate-500 leading-relaxed font-sans">
-                        Please answer 3 basic questions to get pre‑approved loan plans from banks and
-                        financial institutions. This form is completely free and secure.
+                        Choose your loan amount and employment type, then get redirected to your top match.
                     </p>
                 </div>
                 <div class="space-y-3 pt-6">
-                    <button onclick="goToStep('age')" class="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-bold text-center flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-200 active:scale-[0.98] transition-all duration-250 cursor-pointer">
+                    <button onclick="goToStep('loan')" class="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-2xl font-bold text-center flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-200 active:scale-[0.98] transition-all duration-250 cursor-pointer">
                         Start Eligibility Check
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 12h14" />
@@ -326,38 +192,38 @@
                         </svg>
                     </button>
                     <div class="text-[11px] text-slate-400 text-center font-medium">
-                        ⏱️ Time: Only 30 seconds
+                        ⏱️ Quick 2-question flow
                     </div>
                 </div>
             </section>
 
-            <!-- ===== STEP 1: AGE ===== -->
-            <section id="step-age" class="hidden fade-in flex-1 flex flex-col justify-between">
+            <!-- ===== STEP 1: LOAN AMOUNT ===== -->
+            <section id="step-loan" class="hidden fade-in flex-1 flex flex-col justify-between">
                 <div class="space-y-5">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Question 1/3</span>
-                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">33% Complete</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Question 1/2</span>
+                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">50% Complete</span>
                     </div>
                     <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-emerald-500 h-full w-1/3 transition-all duration-300"></div>
+                        <div class="bg-emerald-500 h-full w-1/2 transition-all duration-300"></div>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 leading-snug font-display">What is your current legal age?</h3>
-
+                    <h3 class="text-xl font-bold text-slate-800 leading-snug font-display">Tap your loan amount</h3>
+                    <div class="text-sm text-slate-500">Pick the range that fits your funding need.</div>
                     <div class="grid grid-cols-1 gap-3 pt-2">
-                        <button onclick="setAge('18 – 25 years')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>18 – 25 years</span>
+                        <button onclick="setLoanAmount('Up to ₹50,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>Up to ₹50,000</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
-                        <button onclick="setAge('25 – 40 years')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>25 – 40 years</span>
+                        <button onclick="setLoanAmount('₹50,000 - ₹1,50,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>₹50,000 - ₹1,50,000</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
-                        <button onclick="setAge('40 – 60 years')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>40 – 60 years</span>
+                        <button onclick="setLoanAmount('₹1,50,000 - ₹3,00,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>₹1,50,000 - ₹3,00,000</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
-                        <button onclick="setAge('60+ years')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>60+ years</span>
+                        <button onclick="setLoanAmount('Above ₹3,00,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>Above ₹3,00,000</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
                     </div>
@@ -369,95 +235,45 @@
                 </div>
             </section>
 
-            <!-- ===== STEP 2: INCOME ===== -->
-            <section id="step-income" class="hidden fade-in flex-1 flex flex-col justify-between">
+            <!-- ===== STEP 2: EMPLOYMENT ===== -->
+            <section id="step-employment" class="hidden fade-in flex-1 flex flex-col justify-between">
                 <div class="space-y-5">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Question 2/3</span>
-                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">66% Complete</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-emerald-500 h-full w-2/3 transition-all duration-300"></div>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 leading-snug font-display">What is your current monthly income?</h3>
-
-                    <div class="grid grid-cols-1 gap-3 pt-2">
-                        <button onclick="setIncome('Less than ₹15,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>Less than ₹15,000 / month</span>
-                            <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
-                        </button>
-                        <button onclick="setIncome('₹15,000 – ₹30,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>₹15,000 – ₹30,000</span>
-                            <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
-                        </button>
-                        <button onclick="setIncome('₹30,000 – ₹50,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>₹30,000 – ₹50,000</span>
-                            <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
-                        </button>
-                        <button onclick="setIncome('More than ₹50,000')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <span>More than ₹50,000 / month</span>
-                            <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="pt-6">
-                    <button onclick="goToStep('age')" class="text-xs font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-all">
-                        ← Go Back
-                    </button>
-                </div>
-            </section>
-
-            <!-- ===== STEP 3: CREDIT SCORE ===== -->
-            <section id="step-credit" class="hidden fade-in flex-1 flex flex-col justify-between">
-                <div class="space-y-5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Question 3/3</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Question 2/2</span>
                         <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">100% Complete</span>
                     </div>
                     <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                         <div class="bg-emerald-500 h-full w-full transition-all duration-300"></div>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 leading-snug font-display">What is your current credit score approximately?</h3>
-
+                    <h3 class="text-xl font-bold text-slate-800 leading-snug font-display">Are you salaried or self-employed?</h3>
+                    <div class="text-sm text-slate-500">Your employment type helps us recommend the best loan path.</div>
                     <div class="grid grid-cols-1 gap-3 pt-2">
-                        <button onclick="setCredit('Excellent (750+)')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <div>
-                                <span class="block">🚀 Excellent (750+)</span>
-                                <span class="text-xs font-normal text-slate-400 block pt-0.5">Instantly eligible without hurdles</span>
-                            </div>
+                        <button onclick="setEmployment('Salaried')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>Salaried</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
-                        <button onclick="setCredit('Good (650 – 750)')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <div>
-                                <span class="block">👍 Good (650 – 750)</span>
-                                <span class="text-xs font-normal text-slate-400 block pt-0.5">Acceptable by most banks</span>
-                            </div>
+                        <button onclick="setEmployment('Self-employed')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>Self-employed</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
-                        <button onclick="setCredit('Average (550 – 650)')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <div>
-                                <span class="block">📈 Average (550 – 650)</span>
-                                <span class="text-xs font-normal text-slate-400 block pt-0.5">May be available with extra conditions</span>
-                            </div>
+                        <button onclick="setEmployment('Freelancer / Contract')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>Freelancer / Contract</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
-                        <button onclick="setCredit('Don\'t know / Slightly poor')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
-                            <div>
-                                <span class="block">❓ Don't know / Slightly poor</span>
-                                <span class="text-xs font-normal text-slate-400 block pt-0.5">We'll still find options for you</span>
-                            </div>
+                        <button onclick="setEmployment('Business Owner / Other')" class="option-btn p-4 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-left font-semibold text-slate-700 flex justify-between items-center group transition-all duration-200 cursor-pointer">
+                            <span>Business Owner / Other</span>
                             <span class="check-circle w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center transition-all text-transparent">✓</span>
                         </button>
                     </div>
                 </div>
                 <div class="pt-6">
-                    <button onclick="goToStep('income')" class="text-xs font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-all">
+                    <button onclick="goToStep('loan')" class="text-xs font-semibold text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-all">
                         ← Go Back
                     </button>
                 </div>
             </section>
 
-            <!-- ===== STEP 4: ANALYZING (Loader) ===== -->
+            <!-- ===== STEP 3: ANALYZING ===== -->
             <section id="step-analyzing" class="hidden fade-in flex-1 flex flex-col items-center justify-center text-center space-y-6">
                 <div class="relative w-24 h-24">
                     <div class="w-full h-full rounded-full border-4 border-slate-100"></div>
@@ -467,39 +283,8 @@
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <h4 class="text-lg font-bold text-slate-800 font-display">Analyzing your profile…</h4>
-                    <p class="text-xs text-slate-400 font-medium" id="loader-dialog">Finding the best credit loan partners</p>
-                </div>
-            </section>
-
-            <!-- ===== STEP 5: SUCCESS & CTA ===== -->
-            <section id="step-success" class="hidden fade-in space-y-6 flex-1 flex flex-col justify-between">
-                <div class="text-center space-y-4 py-4">
-                    <div class="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 mx-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                    </div>
-                    <div class="space-y-1">
-                        <h4 class="text-2xl font-extrabold text-slate-800 tracking-tight font-display">Congratulations! You are eligible 🎉</h4>
-                        <p class="text-xs text-emerald-600 font-semibold px-2 py-0.5 bg-emerald-50 inline-block rounded-full">4 special bank loan offers found</p>
-                    </div>
-                    <p class="text-[13px] text-slate-500 leading-relaxed px-2">
-                        Based on your answers, we have unlocked special interest rates and quick disbursement
-                        credit offers for you. Click the button below to redeem immediately.
-                    </p>
-                </div>
-                <div class="space-y-3">
-                    <button onclick="executeRedirect()" class="w-full py-5 px-6 min-h-[4.5rem] bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white rounded-[1.5rem] font-extrabold text-xl text-center flex items-center justify-center gap-3 hover:shadow-2xl shadow-emerald-200 active:scale-[0.98] transition-all duration-300 animate-pulse cursor-pointer">
-                        Select Offer &amp; Apply
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14" />
-                            <path d="m12 5 7 7-7 7" />
-                        </svg>
-                    </button>
-                    <div class="text-[10px] text-slate-400 text-center font-medium">
-                        🛡️ No CIBIL score drop • 1‑minute approval
-                    </div>
+                    <h4 class="text-lg font-bold text-slate-800 font-display">Almost there...</h4>
+                    <p class="text-xs text-slate-400 font-medium" id="loader-dialog">Matching your profile to the best loan destination.</p>
                 </div>
             </section>
 
@@ -516,9 +301,13 @@
     <!-- ============================================================ -->
     <!-- ===== NAVIGATION & LOGIC ===== -->
     <script>
-        // ----- Step navigation -----
+        const answers = {
+            loanAmount: '',
+            employment: ''
+        };
+
         function goToStep(stepId) {
-            const steps = ['intro', 'age', 'income', 'credit', 'analyzing', 'success'];
+            const steps = ['intro', 'loan', 'employment', 'analyzing'];
             steps.forEach(id => {
                 const el = document.getElementById('step-' + id);
                 if (el) {
@@ -527,58 +316,50 @@
             });
         }
 
-        // ----- Setters -----
-        function setAge(val) {
-            answers.age = val;
-            console.log("Age set:", val);
-            goToStep('income');
+        function setLoanAmount(value) {
+            answers.loanAmount = value;
+            console.log('Loan amount selected:', value);
+            goToStep('employment');
         }
 
-        function setIncome(val) {
-            answers.income = val;
-            console.log("Income set:", val);
-            goToStep('credit');
-        }
-
-        function setCredit(val) {
-            answers.creditScore = val;
-            console.log("Credit score set:", val);
+        function setEmployment(value) {
+            answers.employment = value;
+            console.log('Employment selected:', value);
             startAnalysis();
         }
 
-        // ----- Loader animation -----
         function startAnalysis() {
             goToStep('analyzing');
             const counter = document.getElementById('percentage-counter');
             const dialog = document.getElementById('loader-dialog');
             let progress = 0;
 
-            const dialogs = [
-                "Verifying age profile…",
-                "Checking income bracket…",
-                "Matching with credit bureau…",
-                "Finalising eligible bank list…"
+            const messages = [
+                'Reviewing your loan preference…',
+                'Validating employment status…',
+                'Matching best available offers…',
+                'Redirecting you to the application…'
             ];
 
             const interval = setInterval(() => {
-                progress += 4;
-                if (counter) counter.innerText = progress + '%';
+                progress += 5;
+                if (counter) counter.innerText = Math.min(progress, 100) + '%';
 
                 if (dialog) {
-                    const idx = Math.min(Math.floor(progress / 25), dialogs.length - 1);
-                    dialog.innerText = dialogs[idx];
+                    const index = Math.min(Math.floor(progress / 25), messages.length - 1);
+                    dialog.innerText = messages[index];
                 }
 
                 if (progress >= 100) {
                     clearInterval(interval);
-                    goToStep('success');
+                    executeRedirect();
                 }
             }, 60);
         }
 
-        // ----- Final redirect with event -----
         function executeRedirect() {
-            window.location.href = CONFIG.redirectUrl || 'https://example.com/offer';
+            const redirectUrl = CONFIG.redirectUrl || 'https://example.com/offer';
+            window.location.href = redirectUrl;
         }
     </script>
 
